@@ -2,4 +2,4 @@
 __pycache__/
 *.pyc
 .env
-staticfiles/
+staticfiles/db.sqlite3
