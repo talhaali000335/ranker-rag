@@ -1,0 +1,73 @@
+{% extends "base.html" %}                                    <!-- reuse the layout from base.html -->
+
+{% block title %}Chat - Ranker RAG{% endblock %}             <!-- fill the title hole -->
+
+{% block content %}                                          <!-- fill the content hole -->
+<style>
+  #log { background: #fff; border: 1px solid #d3d1c7; border-radius: 10px; min-height: 320px; max-height: 60vh; overflow-y: auto; padding: 14px; }
+  .msg { margin: 8px 0; padding: 10px 12px; border-radius: 10px; max-width: 85%; white-space: pre-wrap; line-height: 1.5; }
+  .user { background: #eeedfe; margin-left: auto; }          /* your messages: purple, on the right */
+  .bot { background: #e1f5ee; }                              /* answers: green */
+  .err { background: #fceaea; }                              /* errors: red */
+  form { display: flex; gap: 8px; margin-top: 12px; }
+  input[type=text] { flex: 1; padding: 12px; border: 1px solid #b4b2a9; border-radius: 8px; font-size: 16px; }
+  button { padding: 12px 18px; border: 0; border-radius: 8px; background: #534ab7; color: #fff; font-size: 16px; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: wait; }
+</style>
+
+<div id="log" aria-live="polite">                            <!-- the box that shows the conversation -->
+  <div class="msg bot">Hi! Ask me a question. (Right now I only echo it back. Real answers come in a later step.)</div>
+</div>
+
+<form id="chat-form">                                        <!-- the typing area -->
+  <input type="text" id="question" placeholder="Type your question..." maxlength="2000" autocomplete="off" required>
+  <button type="submit" id="send">Send</button>
+</form>
+{% endblock %}
+
+{% block scripts %}                                          <!-- fill the scripts hole -->
+<script>
+  const log = document.getElementById("log");                // find the conversation box
+  const form = document.getElementById("chat-form");         // find the form
+  const input = document.getElementById("question");         // find the text box
+  const button = document.getElementById("send");            // find the Send button
+  const csrf = document.querySelector('meta[name="csrf-token"]').content;   // read the security token
+
+  function addMessage(text, kind) {                          // add one bubble to the box
+    const div = document.createElement("div");               // make a new box
+    div.className = "msg " + kind;                           // style it (user, bot or err)
+    div.textContent = text;                                  // put the text in as plain text (safe from injected HTML)
+    log.appendChild(div);                                    // show it
+    log.scrollTop = log.scrollHeight;                        // scroll to the newest message
+  }
+
+  form.addEventListener("submit", async function (event) {   // when Send is pressed...
+    event.preventDefault();                                  // ...don't reload the page
+    const question = input.value.trim();                     // get the typed text
+    if (!question) return;                                   // ignore empty text
+
+    addMessage(question, "user");                            // show your question
+    input.value = "";                                        // clear the text box
+    button.disabled = true;                                  // stop double sends
+
+    try {
+      const response = await fetch("/api/chat/", {           // send the question to our API
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrf },   // say it is JSON and show the token
+        body: JSON.stringify({ question: question })         // the data we send
+      });
+      const data = await response.json();                    // read the reply
+      if (response.ok) {
+        addMessage(data.answer, "bot");                      // show the answer
+      } else {
+        addMessage(data.error || "Something went wrong.", "err");   // show the error
+      }
+    } catch (e) {
+      addMessage("Could not reach the server.", "err");      // the network failed
+    } finally {
+      button.disabled = false;                               // turn the button back on
+      input.focus();                                         // put the cursor back in the box
+    }
+  });
+</script>
+{% endblock %}

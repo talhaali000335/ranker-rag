@@ -40,7 +40,7 @@ ROOT_URLCONF = "config.urls"                      # where the address book lives
 
 TEMPLATES = [{
     "BACKEND": "django.template.backends.django.DjangoTemplates",  # HTML page engine (used by admin)
-    "DIRS": [],                                                    # no extra template folders
+    "DIRS": [BASE_DIR / "templates"],     # look for templates in the templates folder in the project root                                                   # no extra template folders
     "APP_DIRS": True,                                              # also look inside each app
     "OPTIONS": {"context_processors": [
         "django.template.context_processors.request",              # gives pages the request
@@ -64,3 +64,5 @@ USE_TZ = True                                     # always use timezone-aware ti
 STATIC_URL = "/static/"                           # web address of static files
 STATIC_ROOT = BASE_DIR / "staticfiles"            # where collected static files go for Docker
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"   # row ids are big whole numbers
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")   # trust Vercel's note that the visitor used https
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])   # extra sites allowed to post forms (empty for now)

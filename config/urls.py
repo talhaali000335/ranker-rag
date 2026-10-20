@@ -1,8 +1,9 @@
-from django.contrib import admin          # the admin site
-from django.urls import path              # builds web addresses
-from .health import health                # our health page
+from django.contrib import admin            # the admin site
+from django.urls import path, include       # include = hand a group of addresses to another file
+from .health import health                  # our health page
 
-urlpatterns = [                           # the address book
-    path("admin/", admin.site.urls),      # /admin/ opens the admin screen
-    path("health/", health),              # /health/ runs our health view
+urlpatterns = [                             # the main address book
+    path("admin/", admin.site.urls),        # /admin/
+    path("health/", health),                # /health/
+    path("", include("apps.chat.urls")),    # everything else goes to the chat app's address book
 ]
