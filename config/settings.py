@@ -65,4 +65,6 @@ STATIC_URL = "/static/"                           # web address of static files
 STATIC_ROOT = BASE_DIR / "staticfiles"            # where collected static files go for Docker
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"   # row ids are big whole numbers
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")   # trust Vercel's note that the visitor used https
-CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])   # extra sites allowed to post forms (empty for now)
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])   # extra sites allowed to post forms (empty for now)  # which AI model to use; change it in .env if Groq retires it
+GROQ_API_KEY = env("GROQ_API_KEY", default="")                  # read the key from .env, never write it here
+GROQ_MODEL = env("GROQ_MODEL", default="openai/gpt-oss-20b")    # which AI model to use
